@@ -1,17 +1,17 @@
 package com.carnival.service;
 
-import com.carnival.model.Reservation;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.carnival.db.entity.Reservation;
+import com.carnival.db.repository.ReservationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StopWatch;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.List;
+
+import static org.springframework.data.domain.ExampleMatcher.StringMatcher;
+import static org.springframework.data.domain.ExampleMatcher.matchingAny;
 
 @Service
 @Slf4j
@@ -20,27 +20,30 @@ public class ReservationService {
     @Autowired
     RestTemplate restTemplate;
 
+    @Autowired
+    ReservationRepository repository;
+
+
     public List<Reservation> getReservations() {
-        String reservationURL
-                = "http://localhost:8001/reservations";
-        List<Reservation> reservations = new ArrayList<>();
+        return repository.findAll();
+    }
 
-        StopWatch watch = new StopWatch();
-        watch.start();
-        log.info("Making REST API call to " + reservationURL);
+    public void delete(Reservation reservation) {
+        repository.delete(reservation);
+    }
 
-        String response = restTemplate.getForObject(reservationURL, String.class);
-        watch.stop();
+    public List<Reservation> filterByName(String name) {
+        Reservation reservation = new Reservation(name);
+        Example<Reservation> exammple = Example.of((reservation),
+                matchingAny()
+                        .withIgnorePaths("createdDate", "modifiedDate", "createdAt")
+                        .withIgnoreCase(true)
+                        .withMatcher("firstName", match -> match.stringMatcher(StringMatcher.CONTAINING))
+                        .withMatcher("lastName", match -> match.stringMatcher(StringMatcher.CONTAINING)));
+        List<Reservation> reservations = repository.findAll(exammple);
 
-        log.info("Time taken in millis: " + watch.getTotalTimeMillis());
-        log.debug(response);
-
-        if(!StringUtils.isEmpty(response)) {
-            Gson gson = new GsonBuilder().create();
-            Reservation[] resArray = gson.fromJson(response, Reservation[].class);
-            reservations = Arrays.asList(resArray);
-        }
-
+        log.info("filterByName size: " + reservations.size());
         return reservations;
     }
+
 }

@@ -45,7 +45,7 @@ public class Reservation implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
-    public void setCreatedAt(Date createdAt){
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
         this.createdDate = createdAt.getTime();
     }
@@ -58,7 +58,7 @@ public class Reservation implements Serializable {
         return new Timestamp(this.modifiedDate);
     }
 
-    public Reservation(String name){
+    public Reservation(String name) {
         this.setFirstName(name);
         this.setLastName(name);
     }

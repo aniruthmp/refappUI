@@ -24,7 +24,6 @@ public class RefappUiApplication implements CommandLineRunner {
 	}
 
 	@Bean
-//	@LoadBalanced
 	RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
